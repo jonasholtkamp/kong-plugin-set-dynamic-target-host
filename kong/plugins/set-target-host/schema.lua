@@ -26,7 +26,8 @@ return {
           {body_param = {type = "string"}},
           {upstream_host = {required = true, type = "string"}},
           {upstream_port = {type = "number", default = 443}},
-          {string_to_replace_from_host = {required = true, type = "string"}}
+          {string_to_replace_from_host = {required = true, type = "string"}},
+          {throw_on_missing_value = {required = false, type = "boolean", default = false}}
         },
         custom_validator = validate_fields,
       }

@@ -1,4 +1,15 @@
 # Set Upstream Host - Kong plugin
+
+## About this fork
+
+This is a fork from [anup-krai/kong-plugin-set-dynamic-target-host](https://github.com/anup-krai/kong-plugin-set-dynamic-target-host). The original documentation is below.
+
+### Features added
+
+#### Don't throw if the configured parameter is missing
+
+There's a new configuration property `throw_on_missing_value` that controls how to behave if the configured parameter is missing, e.g. header or query parameter. If set to `false` (the default value), this plugin routes through to the configured `upstream_host`. If set to `true`, an error is returned as in the default implementation.
+
 ## Getting Started
 This plugin can be used when request from the API clients has to be routed to different upstream nodes based on the node number for which data is requested. This plugins extracts the parameter from incoming request either from header, query, path or request body and forms the upstream host dynamically. This plugin supports forming upstream host from below parameters -
 * From request header
