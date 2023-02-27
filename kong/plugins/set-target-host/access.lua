@@ -41,41 +41,48 @@ function _M.execute(conf)
   local body_param = conf.body_param
   local upstream_port = conf.upstream_port
   local string_to_replace_from_host = conf.string_to_replace_from_host
+  local throw_on_missing_value = conf.throw_on_missing_value
   local value_to_replace
 
   if header then
     value_to_replace = kong.request.get_header(header)
-    if not (value_to_replace) then
+    if not (value_to_replace) and throw_on_missing_value then
       return_error("Invalid or missing header")
     end
   elseif query_arg then
     value_to_replace = kong.request.get_query_arg(query_arg)
-    if not (value_to_replace) then
+    if not (value_to_replace) and throw_on_missing_value then
       return_error("Invalid or missing query parameters")
     end
   elseif path_index > 0 then
     local path_array = string_split(kong.request.get_path(), "/")
     if path_array[path_index] then
       value_to_replace = path_array[path_index]
-    else
+    elseif throw_on_missing_value then
       return_error("Invalid or missing path parameter")
     end
   elseif body_param then
     if is_json_body(kong.request.get_header("Content-Type")) then
       local json_body = kong.request.get_body(APPLICATION_JSON)
       value_to_replace = assert(load("return " .. body_param, nil, "t", json_body))()
-      if not (value_to_replace) then
+      if not (value_to_replace) and throw_on_missing_value then
         return_error("Invalid or missing body parameter")
       end
     elseif is_form_body(kong.request.get_header("Content-Type")) then
       local form_body = kong.request.get_body(APPLICATION_FORM_URLENCODED)
       value_to_replace = form_body[body_param]
-      if not (value_to_replace) then
+      if not (value_to_replace) and throw_on_missing_value then
         return_error("Invalid or missing body parameter")
       end
     else
       return_error("Content-Type not supported")
     end
+  end
+
+  if not (value_to_replace) then
+    -- if `throw_on_missing_value` is true, then `value_to_replace` might be empty
+    -- we just set it to its default value
+    value_to_replace = string_to_replace_from_host
   end
 
   local upstream_host = string.gsub(upstream_host, string_to_replace_from_host, value_to_replace)
